@@ -1,6 +1,9 @@
 package ca.uqac.lif.textidote.rules;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.googlecode.jsonrpc4j.JsonRpcServer;
 import org.json.simple.JSONObject;
@@ -29,6 +32,8 @@ import java.net.InetAddress;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.Position;
+import ca.uqac.lif.textidote.as.Range;
 
 interface LinterService {
    /**
@@ -45,27 +50,33 @@ interface LinterService {
    /**
     * Give advice to a certain line
     * */
-   public void setAdvice(int index, String advice);
+   public void setAdvice(int index, String advice, int start_pos, int end_pos);
 
    /**
     * Returns the number of available lines
     * */
    public int getLineCount();
-
-   /**
-    * Terminate the check and let textidote continue doing its thing
-    * */
-   public void completeCheck();
 }
 
 class LinterServiceImpl implements LinterService {
    private List<Advice> out_list = new ArrayList<Advice>();
+   private List<String> lines;
+   private AnnotatedString original;
+   private AnnotatedString s;
+   private Rule rule;
+
+   public LinterServiceImpl(Rule rule, AnnotatedString s, AnnotatedString original) {
+      this.rule = rule;
+      this.lines = s.getLines();
+      this.original = original;
+      this.s = s;
+   }
+
    /**
     * Returns all the lines
     * */
    public List<String> getLines() {
-      List<String> ret_val = new ArrayList<String>();
-      return ret_val;
+      return this.lines;
    }
 
    /**
@@ -73,26 +84,24 @@ class LinterServiceImpl implements LinterService {
     * 0 <= index < getLineCount()
     * */
    public String getLine(int index) {
-      return "";
+      return this.lines.get(index);
    }
 
    /**
     * Give advice to a certain line
     * */
-   public void setAdvice(int index, String advice) {
+   public void setAdvice(int index, String advice, int start_pos, int end_pos) {
+      Position start_p = this.s.getSourcePosition(new Position(index, start_pos));
+      Position end_p = this.s.getSourcePosition(new Position(index, end_pos));
+      Range r = new Range(start_p, end_p);
+      this.out_list.add(new Advice(this.rule, r, advice, this.original.getResourceName(), this.original.getLine(index), this.original.getOffset(start_p)));
    }
 
    /**
     * Returns the number of available lines
     * */
    public int getLineCount() {
-      return 0;
-   }
-
-   /**
-    * Terminate the check and let textidote continue doing its thing
-    * */
-   public void completeCheck() {
+      return this.lines.size();
    }
 
    List<Advice> getAdviceList() {
@@ -102,62 +111,63 @@ class LinterServiceImpl implements LinterService {
 
 public class JSONRpcServer extends Rule
 {
-
-   // Implements a handler for an "echo" JSON-RPC method
-   //public static class EchoHandler implements RequestHandler {
-
-
-   //   // Reports the method names of the handled requests
-   //   public String[] handledRequests() {
-
-   //      return new String[]{"echo"};
-   //   }
-
-
-   //   // Processes the requests
-   //   public JSONRPC2Response process(JSONRPC2Request req, MessageContext ctx) {
-
-   //      if (req.getMethod().equals("echo")) {
-
-   //         // Echo first parameter
-
-   //         List params = (List)req.getParams();
-
-   //         Object input = params.get(0);
-
-   //         return new JSONRPC2Response(input, req.getID());
-   //      }
-   //      else {
-
-   //         // Method name not supported
-
-   //         return new JSONRPC2Response(JSONRPC2Error.METHOD_NOT_FOUND, req.getID());
-   //      }
-   //   }
-   //}
+   private AtomicBoolean atomicServerShutdown = new AtomicBoolean(false);
 
    public JSONRpcServer ()
    {
       super("sh:jsonrpc");
    }
 
-   static class MyHandler implements HttpHandler {
-      //   private Dispatcher dispatcher;
-      //   public MyHandler(Dispatcher dispatcher) {
-      //      this.dispatcher = dispatcher;
-      //   }
+   static class LintHandler implements HttpHandler {
+      private LinterService linterService;
+      private AtomicBoolean atomicServerShutdown;
+
+      public LintHandler(LinterService linterService, AtomicBoolean atomicServerShutdown) {
+	 this.linterService = linterService;
+	 this.atomicServerShutdown = atomicServerShutdown;
+      }
+
       @Override
       public void handle(HttpExchange t) throws IOException {
-	 String response = "This is the response";
-	 t.sendResponseHeaders(200, response.length());
 	 OutputStream os = t.getResponseBody();
 	 InputStreamReader isr =  new InputStreamReader(t.getRequestBody(),"utf-8");
 	 BufferedReader br = new BufferedReader(isr);
 	 String s = br.readLine();
 	 JSONParser parser = new JSONParser();
+	 JSONObject ret_obj = new JSONObject();
 	 try{
 	    JSONObject obj = (JSONObject)parser.parse(s);
 	    System.out.println(obj.get("method"));
+	    ret_obj.put("id", obj.get("id"));
+	    ret_obj.put("jsonrpc", "2.0");
+	    if(obj.get("method").equals("getLines")) {
+	       JSONArray ret_vals = new JSONArray();
+	       for(int i = 0; i < this.linterService.getLineCount(); i++) {
+		  ret_vals.add(this.linterService.getLine(i));
+	       }
+	       ret_obj.put("result", ret_vals);
+	    } else if (obj.get("method").equals("getLine")) {
+	       JSONArray params = (JSONArray)obj.get("params");
+	       ret_obj.put("result", this.linterService.getLine(Integer.parseInt((String)params.get(0))));
+	    } else if (obj.get("method").equals("setAdvice")) {
+	       JSONArray params = (JSONArray)obj.get("params");
+	       int index = Integer.parseInt((String)params.get(0));
+	       String advice = (String)params.get(1);
+	       int start_pos = Integer.parseInt((String)params.get(2));
+	       int end_pos = Integer.parseInt((String)params.get(3));
+	       this.linterService.setAdvice(index, advice, start_pos, end_pos);
+	       ret_obj.put("result", "Advice set");
+	    } else if (obj.get("method").equals("getLineCount")) {
+	       ret_obj.put("result", new Integer(this.linterService.getLineCount()));
+	    } else if (obj.get("method").equals("completeCheck")) {
+	       atomicServerShutdown.set(true);
+	       ret_obj.put("result", "Check completed; shutdown server");
+	    }
+	    StringWriter out = new StringWriter();
+	    ret_obj.writeJSONString(out);
+	    String response = out.toString();
+	    t.sendResponseHeaders(200, response.length());
+
 	    os.write(response.getBytes());
 	    os.close();
 	 }catch(ParseException ex) {
@@ -169,45 +179,22 @@ public class JSONRpcServer extends Rule
    @Override
    public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
    {
-      LinterServiceImpl linterService = new LinterServiceImpl();
-      List<String> lines = s.getLines();
+      LinterServiceImpl linterService = new LinterServiceImpl(this, s, original);
       System.out.println("Starting JSON RPC server");
 
-      // Create a new JSON-RPC 2.0 request dispatcher
-      //      Dispatcher dispatcher =  new Dispatcher();
-      //
-      //
-      //      // Register the "echo", "getDate" and "getTime" handlers with it
-      //      dispatcher.register(new EchoHandler());
-      HttpServer server;
+      HttpServer server = null;
       try {
 	 server = HttpServer.create(new InetSocketAddress(8888), 0);
-	 server.createContext("/test", new MyHandler());
+	 server.createContext("/textidote", new LintHandler(linterService, this.atomicServerShutdown));
 	 server.setExecutor(null); // creates a default executor
 	 server.start();
       } catch(IOException ex) {
 	 System.out.println(ex);
       }
       List<Advice> out_list = new ArrayList<Advice>(); //linterService.getAdviceList();
-      boolean atomicServerShutDown = false;
-      while(!atomicServerShutDown);
+      while(!this.atomicServerShutdown.get());
 
-      //      JsonRpcServer server = new JsonRpcServer(linterService, LinterService.class);
-      //
-      //      ServerSocket socket;
-      //      try {
-      //	 socket = ServerSocketFactory.getDefault().createServerSocket(8888);
-      //      } catch (IOException exception) {
-      //	 System.out.println("Could not create server socket");
-      //	 return new ArrayList<Advice>();
-      //      }
-      //
-      //      StreamServer streamServer = new StreamServer(server, 5, socket);
-
-      //      streamServer.start();
-      //
-      //      while(streamServer.isStarted());
-
+      server.stop(2);
 
       return out_list;
    }

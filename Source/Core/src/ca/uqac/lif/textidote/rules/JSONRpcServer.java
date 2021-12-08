@@ -148,7 +148,8 @@ public class JSONRpcServer extends Rule
 	       ret_obj.put("result", ret_vals);
 	    } else if (obj.get("method").equals("getLine")) {
 	       JSONArray params = (JSONArray)obj.get("params");
-	       ret_obj.put("result", this.linterService.getLine(Integer.parseInt((String)params.get(0))));
+	       int index = ((java.lang.Long) params.get(0)).intValue();
+	       ret_obj.put("result", this.linterService.getLine(index));
 	    } else if (obj.get("method").equals("setAdvice")) {
 	       JSONArray params = (JSONArray)obj.get("params");
 	       int index = Integer.parseInt((String)params.get(0));

@@ -3,7 +3,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.lang.InterruptedException;
 
 import com.googlecode.jsonrpc4j.JsonRpcServer;
 import org.json.simple.JSONObject;
@@ -193,7 +195,16 @@ public class JSONRpcServer extends Rule
 	 System.out.println(ex);
       }
       List<Advice> out_list = new ArrayList<Advice>(); //linterService.getAdviceList();
-      while(!this.atomicServerShutdown.get());
+      while(!this.atomicServerShutdown.get()) {
+	 try {
+	    TimeUnit.SECONDS.sleep(1);
+	 } catch (InterruptedException ex) {
+	    System.out.println(ex);
+	 }
+      }
+
+      System.out.println("Shutdown JSONRpcServer...");
+      System.out.println("continue execution");
 
       server.stop(2);
 

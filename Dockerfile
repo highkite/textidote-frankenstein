@@ -12,5 +12,9 @@ RUN tar -xzvf /root/ant.tar.gz && \
 
 FROM openjdk:8
 COPY --from=build /build/textidote.jar /
+WORKDIR /build
+
+VOLUME ["/build"]
+
 ENTRYPOINT ["java", "-jar", "/textidote.jar"]
 

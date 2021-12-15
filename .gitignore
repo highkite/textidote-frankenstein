@@ -32,6 +32,8 @@ jacoco.exec
 # These rules are placed here so that only one .gitignore
 # file is required
 # ----------------------------------------------------
+#
+__pycache__
 
 # Eclipse-specific
 **/.joblock

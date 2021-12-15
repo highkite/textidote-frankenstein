@@ -24,14 +24,14 @@ you need the JSONRpc call details.
 did not like. This is probably only in my situation necessary, but maybe you
 can adapt it to your purposes.
 - I applied Grammark (https://github.com/highkite/py-grammark) and thus, had
-a second 'grammar and readablity' check, that is more focused on scientific
+a second 'grammar and readability' check, that is more focused on scientific
 writing, than the regular Language Tool library used by off-the-shelve
 textidote.
 
 This is only a quick hack, that I needed to improve the quality of some of my
 writings. Maybe it is a starting point for someone, who wants to do something
 similar. If you want to use it I advice you to use the docker files and please
-note, that it is a bit shaky and was never intendet to operate smoothly.
+note, that it is a bit shaky and was never intended to operate smoothly.
 
 # Run textidote-frankenstein
 
@@ -72,7 +72,7 @@ java -jar textidote.jar <arguments>
 
 # textidote.py - The python JSONrpc client
 
-The python package is within the directory `nltk_client`. It is bascially
+The python package is within the directory `nltk_client`. It is basically
 the file `textidote.py` and it uses the `requests` package and the
 `jsonrpcclient` package.
 
@@ -92,7 +92,7 @@ Although, you cannot configure the port or host in textidote-frankenstein with
 commandline arguments yet, you can do it in the python client and only for the
 client. It's almost useless. Isn't that great? Consistency is everything!
 
-You propably do not need to call this method, since the default values are
+You probably do not need to call this method, since the default values are
 those, that are implemented in textidote-frankenstein. And unless you change
 these values in the textidote program code, they will be `localhost:8888`.
 
@@ -105,8 +105,8 @@ from textidote import get_line_count
 line_count = get_line_count()
 ```
 
-Textidote loads (nested) latex files cleanes it from its expressions and then
-the text is splitted line-wise (based on '\n'). This is how the line count is
+Textidote loads (nested) latex files cleans it from its expressions and then
+the text is spitted line-wise (based on '\n'). This is how the line count is
 defined.
 
 ## get_line(\<line_index\>)
@@ -134,7 +134,7 @@ line = get_next_sentence()
 ```
 
 This method tries to return complete sentences. It determines the bounds of
-those 'complete' sentences either by puncuation ".!?;" or if the next line
+those 'complete' sentences either by punctuation ".!?;" or if the next line
 is an empty line. This is necessary, since for instance section titles are
 rarely limited by punctuation.
 
@@ -207,7 +207,7 @@ make build.
 If you don't want to use docker you can alternatively install `openjdk 8`.
 
 ## How does it work
-Sylvain Hallé did a beatiful job, when he engineered the application. Basically
+Sylvain Hallé did a beautiful job, when he engineered the application. Basically
 textidote represents a toolchain. Every grammar checker is a tool, that is
 registered in the toolchain. The toolchain is executed with the text, that we
 want to test and then every tool applies its check, collects a number of 

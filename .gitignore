@@ -34,6 +34,7 @@ jacoco.exec
 # ----------------------------------------------------
 #
 __pycache__
+main.tex
 
 # Eclipse-specific
 **/.joblock

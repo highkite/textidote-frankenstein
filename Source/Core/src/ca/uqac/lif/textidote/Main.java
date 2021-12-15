@@ -722,7 +722,7 @@ public class Main
       linter.add(new CheckStackedHeadings());
       linter.add(new CheckNoBreak());
       linter.add(new CheckCiteMix());
-      linter.add(new JSONRpcServer());
+      linter.addCleaned(new JSONRpcServer());
    }
 
    /**

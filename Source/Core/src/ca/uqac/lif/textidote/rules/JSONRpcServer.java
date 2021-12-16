@@ -96,7 +96,7 @@ class LinterServiceImpl implements LinterService {
       Position start_p = this.s.getSourcePosition(new Position(index, start_pos));
       Position end_p = this.s.getSourcePosition(new Position(index, end_pos));
       Range r = new Range(start_p, end_p);
-      this.out_list.add(new Advice(this.rule, r, advice, this.original.getResourceName(), this.original.getLine(index), this.original.getOffset(start_p)));
+      this.out_list.add(new Advice(this.rule, r, advice, this.s.getResourceName(), this.s.getLine(index), this.s.getOffset(start_p)));
    }
 
    /**
@@ -194,7 +194,7 @@ public class JSONRpcServer extends Rule
       } catch(IOException ex) {
 	 System.out.println(ex);
       }
-      List<Advice> out_list = new ArrayList<Advice>(); //linterService.getAdviceList();
+      List<Advice> out_list = new ArrayList<Advice>();
       while(!this.atomicServerShutdown.get()) {
 	 try {
 	    TimeUnit.SECONDS.sleep(1);

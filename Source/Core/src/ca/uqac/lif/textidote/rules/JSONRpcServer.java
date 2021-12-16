@@ -154,10 +154,10 @@ public class JSONRpcServer extends Rule
 	       ret_obj.put("result", this.linterService.getLine(index));
 	    } else if (obj.get("method").equals("setAdvice")) {
 	       JSONArray params = (JSONArray)obj.get("params");
-	       int index = Integer.parseInt((String)params.get(0));
+	       int index = ((java.lang.Long) params.get(0)).intValue();
 	       String advice = (String)params.get(1);
-	       int start_pos = Integer.parseInt((String)params.get(2));
-	       int end_pos = Integer.parseInt((String)params.get(3));
+	       int start_pos = ((java.lang.Long) params.get(2)).intValue();
+	       int end_pos = ((java.lang.Long) params.get(3)).intValue();
 	       this.linterService.setAdvice(index, advice, start_pos, end_pos);
 	       ret_obj.put("result", "Advice set");
 	    } else if (obj.get("method").equals("getLineCount")) {
@@ -204,9 +204,10 @@ public class JSONRpcServer extends Rule
       }
 
       System.out.println("Shutdown JSONRpcServer...");
+      server.stop(2);
       System.out.println("continue execution");
 
-      server.stop(2);
+      out_list = linterService.getAdviceList();
 
       return out_list;
    }

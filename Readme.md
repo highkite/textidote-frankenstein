@@ -23,7 +23,7 @@ you need the JSONRpc call details.
 - I added rules that identify certain sentence constructions that my supervisor
 did not like. This is probably only in my situation necessary, but maybe you
 can adapt it to your purposes.
-- I applied Grammark (https://github.com/highkite/py-grammark) and thus, had
+- I applied Grammark (https://grammark.org) and thus, had
 a second 'grammar and readability' check, that is more focused on scientific
 writing, than the regular Language Tool library used by off-the-shelve
 textidote.
@@ -31,7 +31,8 @@ textidote.
 This is only a quick hack, that I needed to improve the quality of some of my
 writings. Maybe it is a starting point for someone, who wants to do something
 similar. If you want to use it I advice you to use the docker files and please
-note, that it is a bit shaky and was never intended to operate smoothly.
+note, that it is a bit shaky and it is not intended to become a polished 
+project.
 
 # Run textidote-frankenstein
 
@@ -172,6 +173,29 @@ complete_check()
 
 When this method is called, textidote will shutdown the JSONRpc server and
 continue its regular grammar check.
+
+## translate_indices(\<start_pos\>, \<end_pos\>)
+
+```
+from textidote import translate_indices
+
+# Translates the indices
+line_index, start, end = translate_indices(10, 20)
+```
+
+When you call the `get_text()` function it returns the concatenated string.
+However, textidote works on lines (split by '\n'). Therefore, if you find
+offsets representing the start and end positions of something in the text, we
+need to map it back on a line index and potentially on start and end indices
+within this line.
+
+However, this last thing did not work in textidote. What worked was to use
+the `translate_indices` function to retrieve the line_index and then use
+this line_index and the start and end positions of the entire text to create
+an advice. You can find this in the `check_grammark.py` file.
+
+The context is that textidote provides you with the cleaned text but maps an
+advise back to the original source files.
 
 # Two Example applications
 

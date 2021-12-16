@@ -1,0 +1,4 @@
+[submodule "nltk_client/pyStatParser"]
+	path = nltk_client/pyStatParser
+	url = https://github.com/emilmont/pyStatParser.git
+	branch = master

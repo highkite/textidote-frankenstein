@@ -38,7 +38,7 @@ def get_text(reset=False):
     """
     global LINE_CACHE
     if LINE_CACHE is not None and not reset:
-        return LINE_CACHE
+        return " ".join(LINE_CACHE)
 
     requ = request("getLines")
     response = requests.post(f"http://{host_name}:{port}/textidote", json=requ)
@@ -52,15 +52,13 @@ def reset():
     global LINE_CACHE
     LINE_CACHE = None
 
-def translate_indices(start_pos, end_pos):
+def translate_indices(start_pos, end_pos, lines = LINE_CACHE):
     """The get_text function returns a string. Identified positions within this text must
     be mapped back on line indicies and start/ end positions must lie within the sentence
 
     Returns line_index, new_start_pos, new_end_pos
     in this order
     """
-    lines = LINE_CACHE
-
     if lines is None:
         get_text()
         lines = LINE_CACHE

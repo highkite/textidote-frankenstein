@@ -181,11 +181,21 @@ stuff.
 
 ## Grammark
 
+![Demo](./docs/assets/images/small_result2.gif  "Demo of grammark")
+
+Of course, textidote stops not simply after the shutdown of the JSONRpc server,
+but displays the detected errors. I did not include this in the gif above,
+because of the available space.
+
 The use case relies on the package `py-grammark`.
 
 ```
 pip install py-grammark
 ```
+
+The script is called `check_grammark.py` and you can call
+`check-grammark.py --help` to get an overview about the available arguments.
+`--all` executes every grammark check.
 
 ## Check some custom rules
 

@@ -92,11 +92,53 @@ class LinterServiceImpl implements LinterService {
    /**
     * Give advice to a certain line
     * */
-   public void setAdvice(int index, String advice, int start_pos, int end_pos) {
-      Position start_p = this.s.getSourcePosition(new Position(index, start_pos));
-      Position end_p = this.s.getSourcePosition(new Position(index, end_pos));
-      Range r = new Range(start_p, end_p);
-      this.out_list.add(new Advice(this.rule, r, advice, this.s.getResourceName(), this.s.getLine(index), this.s.getOffset(start_p)));
+   public void setAdvice(int index, String advice, int _start_pos, int _end_pos) {
+      //Position start_p = this.s.getSourcePosition(new Position(index, start_pos));
+      //Position end_p = this.s.getSourcePosition(new Position(index, end_pos));
+      //Position start_src_pos = this.s.getSourcePosition(start_p);
+      //Position end_src_pos = this.s.getSourcePosition(end_p);
+      //Range r = new Range(start_src_pos, end_src_pos);
+
+      String line = "";
+      Position start_src_pos = Position.NOWHERE, end_src_pos = Position.NOWHERE;
+      Position start_pos = this.s.getPosition(_start_pos);
+      if (!start_pos.equals(Position.NOWHERE))
+      {
+	 start_src_pos = this.s.getSourcePosition(start_pos);
+      }
+      Position end_pos = this.s.getPosition(_end_pos);
+      if (!end_pos.equals(Position.NOWHERE))
+      {
+	 end_src_pos = this.s.getSourcePosition(end_pos);
+      }
+      Range r = null;
+      boolean original_range = true;
+      if (start_src_pos.equals(Position.NOWHERE))
+      {
+	 original_range = false;
+	 if (start_pos != null)
+	 {
+	    // Can't find the text in the original: used detexed
+	    line = this.s.getLine(start_pos.getLine());
+	    start_src_pos = start_pos;
+	    end_src_pos = end_pos;
+	 }
+	 r = Range.make(0, 0, 0);
+      }
+      else
+      {
+	 line = this.original.getLine(start_src_pos.getLine());
+	 if (end_src_pos.equals(Position.NOWHERE))
+	 {
+	    r = Range.make(start_src_pos.getLine(), start_src_pos.getColumn(), start_src_pos.getColumn());
+	 }
+	 else
+	 {
+	    r = new Range(start_src_pos, end_src_pos);
+	 }
+      }
+
+      this.out_list.add(new Advice(this.rule, r, advice, this.s.getResourceName(), line, this.original.getOffset(start_src_pos)));
    }
 
    /**

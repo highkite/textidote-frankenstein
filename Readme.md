@@ -223,6 +223,17 @@ The script is called `check_grammark.py` and you can call
 
 ## Check some custom rules
 
+This check uses the pyStatParser from emilmont (https://github.com/emilmont/pyStatParser)
+Unfortunately, the pypi package did not work so I added the repo as submodule.
+Hence, you need to clone this repo `--recursive` or pull the submodule in an
+additional step.
+
+The program is in the file `check_custom_rules.py`.
+
+Please note, that this tool in particular works not very stable on some input
+texts. I really just used it to identify certain sentences, that tend to be
+problematic. I checked those sentences manually.
+
 # Development
 
 If you want to develop, there is a `Makefile`, that uses a docker instance

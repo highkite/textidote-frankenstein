@@ -1,5 +1,6 @@
 from jsonrpcclient import parse, request
 import requests
+import re
 
 host_name = "localhost"
 port = 8888
@@ -112,7 +113,10 @@ def get_next_sentence():
             return None
 
     # check if sentence cache contains whole sentence
-    dot_index = sentence_cache.find(".;!?")
+    reg_result = re.search("[.;!?]", sentence_cache)
+    dot_index = -1
+    if reg_result is not None:
+        dot_index = reg_result.start()
     if dot_index != -1:
         sentence_to_return = sentence_cache[0:dot_index + 1].strip()
         sentence_cache = sentence_cache[dot_index + 1:].strip()
